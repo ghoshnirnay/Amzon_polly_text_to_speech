@@ -6,4 +6,4 @@
 ## 🛠️ Technologies Used
 - Python
 - AWS SDK (Boto3)
-- Amazon Polly
+- Amazon Polly.
