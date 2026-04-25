@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Polly TTS Converter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #4f46e5;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .status {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #4f46e5;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e0e7ff;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 180px;
+            padding: 20px;
+            border: 3px solid #e0e7ff;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s;
+            line-height: 1.6;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .char-count {
+            text-align: right;
+            color: #64748b;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #475569;
+        }
+        
+        select, input[type="range"] {
+            padding: 14px;
+            border: 3px solid #e0e7ff;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus, input[type="range"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .rate-display {
+            text-align: center;
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            min-width: 200px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 3px solid #e0e7ff;
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        audio {
+            width: 100%;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+        
+        .output-info {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 5px solid #4f46e5;
+        }
+        
+        .info-item h4 {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-item p {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 16px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #10b981, #0da271);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Amazon Polly TTS Converter</h1>
+            <p>Convert text to speech with multiple voices and adjustable speech rate</p>
+            <div class="status" id="statusBadge">Ready</div>
+        </header>
+        
+        <div class="card">
+            <h2>Text Input</h2>
+            
+            <textarea id="textInput" placeholder="Enter text to convert to speech (max 3000 characters)...">Amazon Polly is a service that turns text into lifelike speech. With dozens of voices across multiple languages, you can build speech-enabled applications that work in many different countries.</textarea>
+            
+            <div class="char-count">
+                <span id="charCount">0</span> characters
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>Voice Selection</label>
+                    <select id="voiceSelect">
+                        <optgroup label="Neural Voices">
+                            <option value="Joanna">Joanna (Female, US English)</option>
+                            <option value="Matthew">Matthew (Male, US English)</option>
+                            <option value="Ruth">Ruth (Female, US English)</option>
+                            <option value="Stephen">Stephen (Male, US English)</option>
+                        </optgroup>
+                        
+                        <optgroup label="Standard Voices">
+                            <option value="Salli">Salli (Female, US English)</option>
+                            <option value="Joey">Joey (Male, US English)</option>
+                            <option value="Kendra">Kendra (Female, US English)</option>
+                            <option value="Kimberly">Kimberly (Female, US English)</option>
+                        </optgroup>
+                        
+                        <optgroup label="International Voices">
+                            <option value="Mia">Mia (Female, Mexican Spanish)</option>
+                            <option value="Hans">Hans (Male, German)</option>
+                            <option value="Lea">Lea (Female, French)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Speech Rate</label>
+                    <input type="range" id="rateControl" min="0.5" max="2.0" step="0.1" value="1.0">
+                    <div class="rate-display" id="rateValue">Normal Speed (1.0x)</div>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button id="synthesizeBtn" class="btn btn-primary">
+                    Synthesize Speech
+                </button>
+                <button id="previewBtn" class="btn btn-secondary">
+                    Browser Preview
+                </button>
+                <button id="clearBtn" class="btn btn-secondary">
+                    Clear Text
+                </button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Audio Output</h2>
+            
+            <div id="outputPlaceholder">
+                <p style="text-align: center; color: #64748b; padding: 60px 20px; font-size: 18px;">
+                    Your synthesized audio will appear here
+                </p>
+            </div>
+            
+            <audio id="outputAudio" controls style="display: none;"></audio>
+            
+            <div class="output-info" id="outputInfo">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <h4>Voice Used</h4>
+                        <p id="outputVoice">-</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Speech Rate</h4>
+                        <p id="outputRate">-</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Text Length</h4>
+                        <p id="outputLength">- characters</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Status</h4>
+                        <p id="outputStatus">Ready</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button id="downloadBtn" class="btn btn-primary" disabled>
+                    Download MP3
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <!-- AWS SDK loaded from CDN -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1500.0.min.js"></script>
+
+    <script>
+        // ========== CONFIGURATION ==========
+        // REPLACE THESE WITH YOUR AWS CREDENTIALS
+        const AWS_CONFIG = {
+            accessKeyId: 'AKIAXYKJRO2D25GUNARR',        // ← REPLACE WITH YOUR ACCESS KEY ID
+            secretAccessKey: '62bvAAxiuGs5NaFu/sLdc4JKDu0h76S0sWzzah5q',  // ← REPLACE WITH YOUR SECRET KEY
+            region: 'us-east-1'                         // ← Your AWS region
+        };
+        
+        // API Gateway URL (if using API Gateway instead of direct SDK)
+        // If you have API Gateway URL, use it here instead of direct SDK
+        const API_GATEWAY_URL = ''; // Leave empty to use direct SDK
+        
+        // ========== SPEECH RATE LABELS ==========
+        const rateLabels = {
+            '0.5': 'Very Slow (0.5x)',
+            '0.6': 'Slow (0.6x)',
+            '0.7': 'Slow (0.7x)',
+            '0.8': 'Slightly Slow (0.8x)',
+            '0.9': 'Slightly Slow (0.9x)',
+            '1.0': 'Normal (1.0x)',
+            '1.1': 'Slightly Fast (1.1x)',
+            '1.2': 'Slightly Fast (1.2x)',
+            '1.3': 'Fast (1.3x)',
+            '1.4': 'Fast (1.4x)',
+            '1.5': 'Fast (1.5x)',
+            '1.6': 'Very Fast (1.6x)',
+            '1.7': 'Very Fast (1.7x)',
+            '1.8': 'Very Fast (1.8x)',
+            '1.9': 'Very Fast (1.9x)',
+            '2.0': 'Extremely Fast (2.0x)'
+        };
+        
+        // ========== DOM ELEMENTS ==========
+        const elements = {
+            textInput: document.getElementById('textInput'),
+            charCount: document.getElementById('charCount'),
+            voiceSelect: document.getElementById('voiceSelect'),
+            rateControl: document.getElementById('rateControl'),
+            rateValue: document.getElementById('rateValue'),
+            synthesizeBtn: document.getElementById('synthesizeBtn'),
+            previewBtn: document.getElementById('previewBtn'),
+            clearBtn: document.getElementById('clearBtn'),
+            outputPlaceholder: document.getElementById('outputPlaceholder'),
+            outputAudio: document.getElementById('outputAudio'),
+            outputInfo: document.getElementById('outputInfo'),
+            outputVoice: document.getElementById('outputVoice'),
+            outputRate: document.getElementById('outputRate'),
+            outputLength: document.getElementById('outputLength'),
+            outputStatus: document.getElementById('outputStatus'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            statusBadge: document.getElementById('statusBadge')
+        };
+        
+        // ========== STATE ==========
+        let currentAudioUrl = null;
+        let pollyClient = null;
+        
+        // ========== INITIALIZATION ==========
+        function init() {
+            updateCharCount();
+            updateRateDisplay();
+            loadSettings();
+            initializeAWS();
+            
+            // Event listeners
+            elements.textInput.addEventListener('input', updateCharCount);
+            elements.rateControl.addEventListener('input', updateRateDisplay);
+            elements.synthesizeBtn.addEventListener('click', synthesizeSpeech);
+            elements.previewBtn.addEventListener('click', previewSpeech);
+            elements.clearBtn.addEventListener('click', clearText);
+            elements.downloadBtn.addEventListener('click', downloadAudio);
+            
+            showNotification('Amazon Polly TTS Converter Ready!', 'info');
+        }
+        
+        // ========== AWS INITIALIZATION ==========
+        function initializeAWS() {
+            try {
+                // Configure AWS
+                AWS.config.update(AWS_CONFIG);
+                
+                // Create Polly client
+                pollyClient = new AWS.Polly({
+                    apiVersion: '2016-06-10',
+                    region: AWS_CONFIG.region
+                });
+                
+                updateStatus('Connected to Amazon Polly', 'success');
+                console.log('AWS Polly initialized successfully');
+                
+            } catch (error) {
+                updateStatus('AWS Connection Failed', 'error');
+                showNotification('AWS Configuration Error: ' + error.message, 'error');
+                console.error('AWS Init Error:', error);
+            }
+        }
+        
+        // ========== HELPER FUNCTIONS ==========
+        function updateStatus(text, type = 'info') {
+            elements.statusBadge.textContent = text;
+            const colors = {
+                'success': '#10b981',
+                'error': '#ef4444',
+                'info': '#3b82f6',
+                'warning': '#f59e0b'
+            };
+            elements.statusBadge.style.background = colors[type] || colors.info;
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
+            
+            notification.innerHTML = `${icon} ${message}`;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+        
+        function updateCharCount() {
+            const count = elements.textInput.value.length;
+            elements.charCount.textContent = count;
+            
+            if (count > 2500) {
+                elements.charCount.style.color = '#ef4444';
+            } else if (count > 2000) {
+                elements.charCount.style.color = '#f59e0b';
+            } else {
+                elements.charCount.style.color = '#64748b';
+            }
+        }
+        
+        function updateRateDisplay() {
+            const rate = elements.rateControl.value;
+            elements.rateValue.textContent = rateLabels[rate] || `${rate}x`;
+        }
+        
+        // ========== SPEECH SYNTHESIS ==========
+        async function synthesizeSpeech() {
+            const text = elements.textInput.value.trim();
+            
+            // Validation
+            if (!text) {
+                showNotification('Please enter some text', 'error');
+                return;
+            }
+            
+            if (text.length > 3000) {
+                showNotification('Text exceeds 3000 character limit', 'error');
+                return;
+            }
+            
+            if (!pollyClient) {
+                showNotification('AWS Polly not initialized. Check credentials.', 'error');
+                return;
+            }
+            
+            // Update UI
+            elements.synthesizeBtn.disabled = true;
+            elements.synthesizeBtn.innerHTML = '<span class="loading"></span> Processing...';
+            elements.outputStatus.textContent = 'Processing...';
+            elements.outputStatus.style.color = '#f59e0b';
+            elements.outputInfo.style.display = 'block';
+            
+            const voiceId = elements.voiceSelect.value;
+            const rate = elements.rateControl.value;
+            
+            try {
+                // Clear previous audio
+                if (currentAudioUrl) {
+                    URL.revokeObjectURL(currentAudioUrl);
+                    currentAudioUrl = null;
+                }
+                
+                // Prepare SSML with speech rate
+                const escapedText = escapeXml(text);
+                const ssmlText = `<speak><prosody rate="${rate}">${escapedText}</prosody></speak>`;
+                
+                // Polly parameters
+                const params = {
+                    Text: ssmlText,
+                    OutputFormat: 'mp3',
+                    VoiceId: voiceId,
+                    TextType: 'ssml',
+                    Engine: voiceId === 'Joanna' || voiceId === 'Matthew' || 
+                            voiceId === 'Ruth' || voiceId === 'Stephen' ? 'neural' : 'standard'
+                };
+                
+                // Call Amazon Polly
+                const data = await pollyClient.synthesizeSpeech(params).promise();
+                
+                // Convert audio stream to blob
+                const audioBlob = new Blob([data.AudioStream], { type: 'audio/mpeg' });
+                currentAudioUrl = URL.createObjectURL(audioBlob);
+                
+                // Update audio player
+                elements.outputAudio.src = currentAudioUrl;
+                elements.outputPlaceholder.style.display = 'none';
+                elements.outputAudio.style.display = 'block';
+                
+                // Update info display
+                elements.outputVoice.textContent = voiceId;
+                elements.outputRate.textContent = rateLabels[rate] || `${rate}x`;
+                elements.outputLength.textContent = `${text.length} characters`;
+                elements.outputStatus.textContent = 'Ready ✓';
+                elements.outputStatus.style.color = '#10b981';
+                
+                // Enable download
+                elements.downloadBtn.disabled = false;
+                
+                // Auto-play
+                setTimeout(() => {
+                    elements.outputAudio.play().catch(e => {
+                        console.log('Auto-play prevented:', e);
+                    });
+                }, 500);
+                
+                showNotification('Speech synthesized successfully!', 'success');
+                updateStatus('Speech Generated', 'success');
+                
+            } catch (error) {
+                console.error('Polly Error:', error);
+                
+                elements.outputStatus.textContent = `Error: ${error.message}`;
+                elements.outputStatus.style.color = '#ef4444';
+                
+                let errorMessage = error.message;
+                if (error.code === 'InvalidSignatureException') {
+                    errorMessage = 'Invalid AWS credentials. Please check your access keys.';
+                } else if (error.code === 'AccessDeniedException') {
+                    errorMessage = 'Access denied. Check IAM permissions for Polly.';
+                }
+                
+                showNotification(`Error: ${errorMessage}`, 'error');
+                updateStatus('Synthesis Failed', 'error');
+                
+            } finally {
+                // Reset button
+                elements.synthesizeBtn.disabled = false;
+                elements.synthesizeBtn.innerHTML = 'Synthesize Speech';
+            }
+        }
+        
+        function escapeXml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
+        }
+        
+        // ========== BROWSER PREVIEW ==========
+        function previewSpeech() {
+            const text = elements.textInput.value.trim().substring(0, 100);
+            
+            if (!text) {
+                showNotification('Please enter some text', 'error');
+                return;
+            }
+            
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = parseFloat(elements.rateControl.value);
+                
+                // Try to match voice
+                const voices = speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    const selectedVoiceName = elements.voiceSelect.options[elements.voiceSelect.selectedIndex].text;
+                    const matchingVoice = voices.find(v => 
+                        selectedVoiceName.toLowerCase().includes(v.name.toLowerCase().split(' ')[0])
+                    );
+                    if (matchingVoice) {
+                        utterance.voice = matchingVoice;
+                    }
+                }
+                
+                utterance.onstart = () => {
+                    showNotification('Playing browser preview...', 'info');
+                };
+                
+                utterance.onend = () => {
+                    showNotification('Preview completed', 'success');
+                };
+                
+                window.speechSynthesis.speak(utterance);
+                
+            } else {
+                showNotification('Browser speech synthesis not supported', 'error');
+            }
+        }
+        
+        // ========== UTILITY FUNCTIONS ==========
+        function saveSettings() {
+            const settings = {
+                voice: elements.voiceSelect.value,
+                rate: elements.rateControl.value
+            };
+            localStorage.setItem('pollySettings', JSON.stringify(settings));
+        }
+        
+        function loadSettings() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('pollySettings'));
+                if (saved) {
+                    if (saved.voice) elements.voiceSelect.value = saved.voice;
+                    if (saved.rate) elements.rateControl.value = saved.rate;
+                    updateRateDisplay();
+                }
+            } catch (e) {
+                // No saved settings
+            }
+        }
+        
+        function clearText() {
+            if (elements.textInput.value.trim()) {
+                if (confirm('Clear all text?')) {
+                    elements.textInput.value = '';
+                    updateCharCount();
+                    elements.textInput.focus();
+                }
+            }
+        }
+        
+        function downloadAudio() {
+            if (!currentAudioUrl) return;
+            
+            const a = document.createElement('a');
+            const voice = elements.voiceSelect.value;
+            const rate = elements.rateControl.value;
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-');
+            a.href = currentAudioUrl;
+            a.download = `polly-${voice}-${rate}x-${timestamp}.mp3`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            elements.outputStatus.textContent = 'Download started...';
+            showNotification('Download started', 'success');
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
