@@ -2,7 +2,7 @@
 Convert text into natural, human-like speech using AWS Polly and Python. 
 
 ## Website live
-Look at the demo of our text to speech converter at :-
+Look at the demo of our text to speech converter at :
 https://ghoshnirnay.github.io/Amzon_polly_text_to_speech/ 
 
 ##  Overview
