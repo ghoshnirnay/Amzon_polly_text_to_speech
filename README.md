@@ -1,7 +1,7 @@
 # 🎙️ Amazon Polly Text-to-Speech
 
 <p align="center">
-  <img src="assets/amazon-polly-banner.png" alt="Amazon Polly Text-to-Speech">
+  <img src="Amazon Polly Text-to-Speech.png" alt="Amazon Polly Text-to-Speech">
 </p>
 
 <p align="center">
