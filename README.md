@@ -370,9 +370,13 @@ Then provide your AWS credentials and preferred region securely.
 <p align="center">
 
 <strong>Debjit Ghosh</strong>
+
 <strong>Nirnay Ghosh</strong>
+
 <strong>Nilanjan Pradhan</strong>
+
 <strong>Fauzia Nasrin</strong>
+
 <strong>Pritam Bhunia</strong>
 
 <br>
